@@ -340,6 +340,7 @@ impl Remote {
         const QUERY_METHOD_ID: &str = "1";
 
         let account_id = &self.session.primary_accounts.mail;
+        let chunk_size = self.session.capabilities.core.max_objects_in_get;
         let mut response = self.request(jmap::Request {
             using: &[jmap::CapabilityKind::Core, jmap::CapabilityKind::Mail],
             method_calls: &[
@@ -360,7 +361,7 @@ impl Remote {
                             position: 0,
                             anchor: None,
                             anchor_offset: 0,
-                            limit: None,
+                            limit: Some(chunk_size),
                             calculate_total: false,
                         },
                     },
@@ -411,7 +412,7 @@ impl Remote {
                             anchor: Some(email_ids.last().unwrap()),
                             anchor_offset: 1,
                             position: 0,
-                            limit: None,
+                            limit: Some(chunk_size),
                             calculate_total: false,
                         },
                     },
@@ -469,6 +470,7 @@ impl Remote {
         let mut created_ids = HashSet::new();
         let mut updated_ids = HashSet::new();
         let mut destroyed_ids = HashSet::new();
+        let chunk_size = self.session.capabilities.core.max_objects_in_get;
 
         loop {
             let account_id = &self.session.primary_accounts.mail;
@@ -479,7 +481,7 @@ impl Remote {
                         changes: jmap::MethodCallChanges {
                             account_id,
                             since_state: &state,
-                            max_changes: None,
+                            max_changes: Some(chunk_size),
                         },
                     },
                     id: CHANGES_METHOD_ID,
